@@ -2,6 +2,10 @@ CELL_EMPTY = '.'
 CELL_WALL = '#'
 CELL_SPAWN = 'w'
 
+SANITY_LOSS_LONELY = 3
+SANITY_LOSS_GROUP = 1
+WANDERER_SPAWN_TIME = 3
+WANDERER_LIFE_TIME = 40
 
 class KutuluWorld():
     def __init__(self, fname='map.txt'):
@@ -23,10 +27,4 @@ class KutuluWorld():
     def height(self):
         return len(self.map_grid)
     
-    def get_consts(self):
-        sanity_loss_lonely = 3
-        sanity_loss_group = 1
-        wanderer_spawn_time = 3
-        wanderer_life_time = 40
-        return (sanity_loss_lonely, sanity_loss_group, wanderer_spawn_time, wanderer_life_time)
 
