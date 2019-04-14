@@ -23,7 +23,7 @@ while True:
     cases = ['WAIT']
     for i in range(entity_count):
         entity_type, id, x, y, param_0, param_1, param_2 = input().split()
-        print((entity_type, id, x, y, param_0, param_1, param_2), file=sys.stderr)
+        # print((entity_type, id, x, y, param_0, param_1, param_2), file=sys.stderr)
         id = int(id)
         x = int(x)
         y = int(y)
