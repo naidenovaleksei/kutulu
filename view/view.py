@@ -7,11 +7,16 @@ from view.cells import BaseCell
 
 
 # Define some colors
-BLACK = ( 0, 0, 0)
+EMPTY_COLOR = ( 255, 255, 255)
+WALL_COLOR = ( 127, 127, 127)
+SPAWN_COLOR = ( 0, 0, 255)
+EXPLORER_COLORS = [
+    ( 200, 100, 0),
+    ( 100, 0, 200),
+    ( 100, 200, 200),
+    ( 100, 200, 0)
+]
 WHITE = ( 255, 255, 255)
-GREEN = ( 0, 255, 0)
-RED = ( 255, 0, 0)
-BLUE = ( 0, 0, 255)
 
 CELL_SIZE = 30
 
@@ -34,9 +39,9 @@ class View():
         for i in range(height):
             for j in range(width):
                 color = {
-                    CELL_WALL: BLACK,
-                    CELL_EMPTY: GREEN,
-                    CELL_SPAWN: BLUE
+                    CELL_WALL: WALL_COLOR,
+                    CELL_EMPTY: EMPTY_COLOR,
+                    CELL_SPAWN: SPAWN_COLOR
                 }[ world.cell_type(j, i) ]
                 cell = BaseCell(color, CELL_SIZE, CELL_SIZE)
                 cell.rect.x = j * CELL_SIZE
@@ -47,7 +52,7 @@ class View():
         # self.player_list = []
         for unit in model.explorers:
             # unit_color = WHITE if unit.get_type() == "EXPLORER" else RED
-            unit_color = RED
+            unit_color = EXPLORER_COLORS[unit.id % 4]
             unit_cell = BaseCell(unit_color, CELL_SIZE, CELL_SIZE)
             unit_cell.rect.x = unit.x * CELL_SIZE
             unit_cell.rect.y = unit.y * CELL_SIZE
@@ -63,12 +68,21 @@ class View():
                 return False # Flag that we are done so we exit this loop
         screen = self.screen
         screen.fill(WHITE)
-        for unit, unit_cell in zip(self.model.explorers, self.player_sprites_list):
-            unit_cell.rect.x = unit.x * CELL_SIZE
-            unit_cell.rect.y = unit.y * CELL_SIZE
-            print(unit_cell.rect.x, unit_cell.rect.y)
-
         self.cell_sprites_list.draw(screen)
+        for unit, unit_cell in zip(self.model.explorers, self.player_sprites_list):
+            if unit.get_alive():
+                unit_cell.rect.x = unit.x * CELL_SIZE
+                unit_cell.rect.y = unit.y * CELL_SIZE
+                # print(unit_cell.rect.x, unit_cell.rect.y)
+            else:
+                unit_cell.rect.x =  self.model.world.width() * CELL_SIZE
+                unit_cell.rect.y = self.model.world.height() * CELL_SIZE
+            text = f"{unit.id}: {unit.sanity}"
+            font = pygame.font.SysFont('Comic Sans MS', 10)
+            text_color = EXPLORER_COLORS[unit.id % 4]
+            text = font.render(text, True, text_color)
+            screen.blit(text, (self.size[0] - 100, 100 + 10 * unit.id))
+
         self.player_sprites_list.update()
         self.player_sprites_list.draw(screen)
 
