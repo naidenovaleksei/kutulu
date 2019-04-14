@@ -26,16 +26,16 @@ class Explorer( BaseUnit ):
         self.x, self.y = new_x, new_y
     
     def _try_action(self, action: str):
+        self.last_action = action
         try:
             ops = action.split()
             if ops[0] == 'WAIT':
-                print('WAIT')
+                pass
             elif ops[0] == 'MOVE':
                 x, y = [int(x) for x in ops[1:]]
                 self._move(x, y)
-                print('MOVE', x, y)
             else:
-                raise Exception("bad action: %s" % action)
+                raise Exception("%d bad action: %s" % (self.id, action))
         except Exception as e:
             print(e)
 
@@ -57,15 +57,28 @@ class Explorer( BaseUnit ):
         return action
     
     def make_action(self, entities):
+        assert self.get_alive()
         action = self.get_action(entities)
         self._try_action(action)
 
-    def update_state(self):
+    def update_state(self, explorers):
+        no_neighbours = True
+        for explorer in explorers:
+            if explorer.id != self.id and \
+                self.world.distance(self.x, self.y, explorer.x, explorer.y) <= 2:
+                no_neighbours = False
+                break
+        sanity_loss = SANITY_LOSS_LONELY if no_neighbours else SANITY_LOSS_GROUP
+        self.sanity = max(self.sanity - sanity_loss, 0)
+        if not self.get_alive():
+            self.finish()
         return
 
-    def get_world_data(self, entities):
-        entity_count = len(entities)
-        entities = [entity for i,entity in enumerate(entities) if i != self.id]
+    def get_world_data(self, explorers):
+        entity_count = len(explorers)
+        explorers = [explorer for explorer in explorers if explorer.id != self.id]
+        assert len(explorers) == entity_count - 1
+        entities = [explorer.desc() for explorer in explorers]
         entities = [entity_count, self.desc()] + entities
         world_data = {'entities': entities}
         return world_data
@@ -73,6 +86,9 @@ class Explorer( BaseUnit ):
     def desc(self):
         desc = f'{self.get_type()} {self.id} {self.x} {self.y} {self.sanity} 0 0'
         return desc
+    
+    def get_alive(self):
+        return self.sanity > 0
 
     def finish(self):  
         if self.player is not None:

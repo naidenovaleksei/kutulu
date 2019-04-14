@@ -25,6 +25,8 @@ class PipeCommunicator():
         return answers
 
     def close( self ):
+        if self.closed:
+            return
         self.p.kill()
         self.p = None
         self.closed = True
