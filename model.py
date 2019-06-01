@@ -13,7 +13,7 @@ class KutuluModel:
         self.explorers = [ 
             Explorer(0, 6, 7, PipePlayer( 'submit.py' ), self.world),
             Explorer(1, 5, 3, PipePlayer( 'submit.py' ), self.world),
-            Explorer(2, 6, 8, PipePlayer( 'submit.py' ), self.world)
+            Explorer(2, 6, 9, PipePlayer( 'submit.py' ), self.world)
          ]
         self.wanderers = UnitCollection(Wanderer)
         self.turn_count = 0
@@ -23,9 +23,15 @@ class KutuluModel:
             return False
 
         entities = self.get_alive_explorers() + self.wanderers.units
+        actions = []
+        # сначала собираем все действия
         for explorer in entities:
             assert explorer.get_alive()
-            explorer.make_action(entities)
+            actions.append(explorer.get_action(entities))
+
+        # потом выполняем все действия
+        for unit,action in zip(entities, actions):
+            unit.try_action(action)
 
         # if self.turn_count % 5 == 0
         if self.turn_count == 0:

@@ -8,6 +8,8 @@ class BaseUnit():
         self.y = y
         self.id = unit_id
         self.world = world
+        self.last_pos = None
+        self.last_action = None
     
     def get_type(self):
         assert False
@@ -15,7 +17,8 @@ class BaseUnit():
     def get_alive(self):
         return self.id is not None and self.world.is_empty(self.x, self.y)
     
-    def get_action(self, entities):  
+    def get_action(self, entities):
+        assert self.get_alive()
         return 'WAIT'
 
     def desc(self):
@@ -27,19 +30,13 @@ class BaseUnit():
     def update_state(self, units):
         pass
 
+    # def make_action(self, entities):
+    #     assert self.get_alive()
+    #     action = self.get_action(entities)
+    #     self._try_action(action)    
     
-    def make_action(self, entities):
-        assert self.get_alive()
-        action = self.get_action(entities)
-        self._try_action(action)
-    
-
-    def _move(self, new_x, new_y):
-        if not self.world.approve_move(self.x, self.y, new_x, new_y):
-            raise Exception("bad new coords: %d %d" % (new_x, new_y))
-        self.x, self.y = new_x, new_y
-    
-    def _try_action(self, action: str):
+    def try_action(self, action: str):
+        self.last_pos = (self.x, self.y)
         self.last_action = action
         try:
             ops = action.split()
@@ -52,6 +49,11 @@ class BaseUnit():
                 raise Exception("%d bad action: %s" % (self.id, action))
         except Exception as e:
             print(e)
+
+    def _move(self, new_x, new_y):
+        if not self.world.approve_move(self.x, self.y, new_x, new_y):
+            raise Exception("bad new coords: %d %d" % (new_x, new_y))
+        self.x, self.y = new_x, new_y
 
 
 class UnitCollection():

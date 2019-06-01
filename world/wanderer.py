@@ -3,6 +3,7 @@ import random
 from world.unit import BaseUnit
 from world.world import KutuluWorld
 from world.world import WANDERER_SPAWN_TIME, WANDERER_LIFE_TIME, SPAWNING, WANDERING
+from world.path import find_path
 
 
 class Wanderer( BaseUnit ):
@@ -28,12 +29,20 @@ class Wanderer( BaseUnit ):
         assert False
 
     def get_action(self, entities):
-        x,y = self.x,self.y
-        cases = []
-        for _x,_y in [(x,y-1),(x,y+1),(x-1,y),(x+1,y)]:
-            if self.world.is_empty(_x, _y):
-                cases.append('MOVE %d %d' % (_x, _y))
-        action = random.choice(cases)
+        assert self.get_alive()
+        x,y = self.x, self.y
+        if self.state == SPAWNING:
+            return 'WAIT'
+        try:
+            target = [unit for unit in entities if unit.id == self.target][0]
+            path = find_path((x, y), (target.x, target.y), self.world)
+            action = 'MOVE %d %d' % (path[-1])
+        except IndexError:
+            cases = []
+            for _x,_y in [(x,y-1),(x,y+1),(x-1,y),(x+1,y)]:
+                if self.world.is_empty(_x, _y):
+                    cases.append('MOVE %d %d' % (_x, _y))
+            action = random.choice(cases)
         return action
 
     def desc(self):
@@ -62,6 +71,7 @@ class Wanderer( BaseUnit ):
     
     def choose_target(self, units):
         explorers = [unit for unit in units if unit.get_type() == 'EXPLORER']
+        # TODO: min path is needed
         target_unit = min(explorers, key=self.get_distance)
         self.target = target_unit.id
 

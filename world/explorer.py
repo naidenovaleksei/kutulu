@@ -21,7 +21,8 @@ class Explorer( BaseUnit ):
             return False
         return self.sanity > 0
     
-    def get_action(self, entities):  
+    def get_action(self, entities):
+        assert self.get_alive()
         if self.player is None:
             return 'WAIT'
         world_data = self._get_world_data(entities)
@@ -46,7 +47,7 @@ class Explorer( BaseUnit ):
         for wanderer in wanderers:
             if wanderer.state != WANDERING:
                 continue
-            if wanderer.x == self.x and wanderer.y == self.y:
+            if self._get_catched(wanderer):
                 self.sanity = max(self.sanity - SANITY_LOSS_SPOOKED, 0)
                 print('wanderer %d spooked' % wanderer.id)
                 wanderer.spooked = True
@@ -71,6 +72,14 @@ class Explorer( BaseUnit ):
             'map_grid': world.map_grid,
             'const': (SANITY_LOSS_LONELY, SANITY_LOSS_GROUP, WANDERER_SPAWN_TIME, WANDERER_LIFE_TIME)
         })
+    
+    def _get_catched(self, wanderer):
+        if wanderer.x == self.x and wanderer.y == self.y:
+            return True
+        if self.last_pos == (wanderer.x, wanderer.y) and \
+            wanderer.last_pos == (self.x, self.y):
+            return True
+        return False
 
     def _get_world_data(self, explorers):
         entity_count = len(explorers)
