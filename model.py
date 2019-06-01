@@ -17,11 +17,9 @@ class KutuluModel:
          ]
         self.wanderers = UnitCollection(Wanderer)
         self.turn_count = 0
+        self.last_explorer = None
     
     def make_turn( self ):
-        if not self.get_continue():
-            return False
-
         entities = self.get_alive_explorers() + self.wanderers.units
         actions = []
         # сначала собираем все действия
@@ -33,9 +31,9 @@ class KutuluModel:
         for unit,action in zip(entities, actions):
             unit.try_action(action)
 
-        # if self.turn_count % 5 == 0
-        if self.turn_count == 0:
-            self.start_spawn_wanderer()
+        if self.turn_count % 5 == 0:
+            first_time = self.turn_count == 0
+            self.start_spawn_wanderer(first_time)
 
         # live_wanderers = [wanderer for wanderer in self.wanderers if wanderer.get_alive()]
         for unit in entities:
@@ -43,8 +41,10 @@ class KutuluModel:
         
         self.wanderers.update_state()
 
-        # print([(explorer.id, explorer.sanity, explorer.last_action) for explorer in self.explorers])
-        self.last_explorer = self.get_alive_explorers()[0]
+        if not self.get_continue():
+            self.last_explorer = self.get_alive_explorers()[0]
+            return False
+        
         self.turn_count += 1
         return True
     
@@ -53,15 +53,19 @@ class KutuluModel:
         return res
     
     def get_continue(self):
-        res = next((True for wanderer in self.get_alive_explorers()), False)
-        return res
+        explorers = self.get_alive_explorers()
+        return len(explorers) > 1
 
     def finish(self):
         print("%d WIN!" % self.last_explorer.id)
         for explorer in self.explorers:
             explorer.finish()
 
-    def start_spawn_wanderer(self):
-        spawnpoints = self.world.get_all_spawnpoints()
+    def start_spawn_wanderer(self, first_time=True):
+        if first_time:
+            spawnpoints = self.world.get_all_spawnpoints()
+        else:
+            explorers_coords = [(e.x, e.y) for e in self.get_alive_explorers()]
+            spawnpoints = self.world.get_furthest_spawnpoints(explorers_coords)
         for x,y in spawnpoints:
             self.wanderers.add_unit(x, y, self.world)
