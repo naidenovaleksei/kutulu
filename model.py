@@ -1,15 +1,17 @@
 
 from world.world import KutuluWorld
 from world.world import SANITY_LOSS_LONELY, SANITY_LOSS_GROUP, WANDERER_SPAWN_TIME, WANDERER_LIFE_TIME
-from world.unit import Explorer, Wanderer, UnitCollection
-from world.unit import SPAWNING, WANDERING
+from world.explorer import Explorer
+from world.wanderer import Wanderer
+from world.unit import UnitCollection
+from world.world import SPAWNING, WANDERING
 from players.player import PipePlayer
 
 class KutuluModel:
     def __init__( self ):
         self.world = KutuluWorld( 'map.txt' )
         self.explorers = [ 
-            Explorer(0, 6, 7, PipePlayer( 'submit_log.py' ), self.world),
+            Explorer(0, 6, 7, PipePlayer( 'submit.py' ), self.world),
             Explorer(1, 5, 3, PipePlayer( 'submit.py' ), self.world),
             Explorer(2, 6, 8, PipePlayer( 'submit.py' ), self.world)
          ]
@@ -55,5 +57,5 @@ class KutuluModel:
 
     def start_spawn_wanderer(self):
         spawnpoints = self.world.get_all_spawnpoints()
-        for spawnpoint in spawnpoints:
-            self.wanderers.add_unit(*spawnpoint, self.world)
+        for x,y in spawnpoints:
+            self.wanderers.add_unit(x, y, self.world)
