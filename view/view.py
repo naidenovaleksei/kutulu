@@ -18,6 +18,7 @@ EXPLORER_COLORS = [
     ( 100, 200, 0)
 ]
 WHITE = ( 255, 255, 255)
+BLACK = (0, 0, 0)
 
 CELL_SIZE = 30
 
@@ -70,6 +71,16 @@ class View():
         screen = self.screen
         screen.fill(WHITE)
         self.cell_sprites_list.draw(screen)
+
+        font = pygame.font.SysFont('Comic Sans MS', 10)
+        text_color = BLACK
+        for i in range(self.model.world.height()):
+            text = font.render(f"{i}", True, text_color)
+            screen.blit(text, (0, i * CELL_SIZE))
+        for i in range(self.model.world.width()):
+            text = font.render(f"{i}", True, text_color)
+            screen.blit(text, (i * CELL_SIZE, 0))
+
         for unit, unit_cell in zip(self.model.explorers, self.player_sprites_list):
             if unit.get_alive():
                 unit_cell.rect.x = unit.x * CELL_SIZE
