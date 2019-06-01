@@ -11,9 +11,9 @@ class Wanderer( BaseUnit ):
         self.spawn_time = WANDERER_SPAWN_TIME
         self.life_time = None
         self.state = SPAWNING
-        self.id = -1
         self.spooked = False
         self.world = world
+        self.target = -1
     
     def get_type(self):
         return "WANDERER"
@@ -46,6 +46,8 @@ class Wanderer( BaseUnit ):
         if self.state == SPAWNING:
             self.spawn_time -= 1
         elif self.state == WANDERING and self.life_time > 0:
+            if self.target < 0:
+                self.choose_target(units)
             self.life_time -= 1
         else:
             assert False
@@ -53,3 +55,13 @@ class Wanderer( BaseUnit ):
             print('wanderer %d spawned and wandering' % self.id)
             self.state = WANDERING
             self.life_time = WANDERER_LIFE_TIME
+    
+    def get_distance(self, unit):
+        return self.world.distance(self.x, self.y, unit.x, unit.y)
+
+    
+    def choose_target(self, units):
+        explorers = [unit for unit in units if unit.get_type() == 'EXPLORER']
+        target_unit = min(explorers, key=self.get_distance)
+        self.target = target_unit.id
+
