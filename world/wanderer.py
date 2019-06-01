@@ -47,7 +47,7 @@ class Wanderer( BaseUnit ):
 
     def desc(self):
         ltime = self.spawn_time if self.state == SPAWNING else self.life_time
-        desc = f'{self.get_type()} {self.id} {self.x} {self.y} {ltime} {self.state} 0'
+        desc = f'{self.get_type()} {self.id} {self.x} {self.y} {ltime} {self.state} {self.target}'
         return desc
 
     def update_state(self, units):

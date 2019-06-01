@@ -35,7 +35,8 @@ class KutuluModel:
             first_time = self.turn_count == 0
             self.start_spawn_wanderer(first_time)
 
-        # live_wanderers = [wanderer for wanderer in self.wanderers if wanderer.get_alive()]
+        live_wanderers = [wanderer for wanderer in self.wanderers if wanderer.get_alive()]
+        entities = self.get_alive_explorers() + live_wanderers
         for unit in entities:
             unit.update_state(entities)
         
