@@ -10,6 +10,7 @@ from view.cells import BaseCell
 EMPTY_COLOR = ( 255, 255, 255)
 WALL_COLOR = ( 127, 127, 127)
 SPAWN_COLOR = ( 0, 0, 255)
+WANDERER_COLOR = (0, 255, 0)
 EXPLORER_COLORS = [
     ( 200, 100, 0),
     ( 100, 0, 200),
@@ -85,6 +86,17 @@ class View():
 
         self.player_sprites_list.update()
         self.player_sprites_list.draw(screen)
+
+        self.wanderers_sprites_list = pygame.sprite.Group()
+        for unit in self.model.wanderers:
+            unit_color = WANDERER_COLOR
+            unit_cell = BaseCell(unit_color, CELL_SIZE, CELL_SIZE)
+            unit_cell.rect.x = unit.x * CELL_SIZE
+            unit_cell.rect.y = unit.y * CELL_SIZE
+            self.wanderers_sprites_list.add( unit_cell )
+
+        self.wanderers_sprites_list.update()
+        self.wanderers_sprites_list.draw(screen)
 
 
         # --- Go ahead and update the screen with what we've drawn.

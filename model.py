@@ -1,7 +1,7 @@
 
 from world.world import KutuluWorld
 from world.world import SANITY_LOSS_LONELY, SANITY_LOSS_GROUP, WANDERER_SPAWN_TIME, WANDERER_LIFE_TIME
-from world.unit import BaseUnit, Explorer, Wanderer
+from world.unit import Explorer, Wanderer, UnitCollection
 from world.unit import SPAWNING, WANDERING
 from players.player import PipePlayer
 
@@ -9,28 +9,51 @@ class KutuluModel:
     def __init__( self ):
         self.world = KutuluWorld( 'map.txt' )
         self.explorers = [ 
-            Explorer(0, 6, 7, PipePlayer( 'submit.py' ), self.world),
-            Explorer(1, 9, 7, PipePlayer( 'submit.py' ), self.world),
+            Explorer(0, 6, 7, PipePlayer( 'submit_log.py' ), self.world),
+            Explorer(1, 5, 3, PipePlayer( 'submit.py' ), self.world),
             Explorer(2, 6, 8, PipePlayer( 'submit.py' ), self.world)
          ]
-        self.wanderers = []
+        self.wanderers = UnitCollection(Wanderer)
+        self.turn_count = 0
     
     def make_turn( self ):
-        live_explorers = [explorer for explorer in self.explorers if explorer.get_alive()]
-        if len(live_explorers) == 0:
+        if not self.get_continue():
             return False
-        for explorer in live_explorers:
+
+        entities = self.get_alive_explorers() + self.wanderers.units
+        for explorer in entities:
             assert explorer.get_alive()
-            explorer.make_action(live_explorers)
+            explorer.make_action(entities)
 
-        for explorer in live_explorers:
-            explorer.update_state(live_explorers)
+        # if self.turn_count % 5 == 0
+        if self.turn_count == 0:
+            self.start_spawn_wanderer()
 
-        print([(explorer.id, explorer.sanity, explorer.last_action) for explorer in self.explorers])
-        self.last_explorer = live_explorers[0]
+        # live_wanderers = [wanderer for wanderer in self.wanderers if wanderer.get_alive()]
+        for unit in entities:
+            unit.update_state(entities)
+        
+        self.wanderers.update_state()
+
+        # print([(explorer.id, explorer.sanity, explorer.last_action) for explorer in self.explorers])
+        self.last_explorer = self.get_alive_explorers()[0]
+        self.turn_count += 1
         return True
+    
+    def get_alive_explorers(self):
+        res = [explorer for explorer in self.explorers if explorer.get_alive()]
+        return res
+    
+    def get_continue(self):
+        res = next((True for wanderer in self.get_alive_explorers()), False)
+        return res
 
     def finish(self):
         print("%d WIN!" % self.last_explorer.id)
         for explorer in self.explorers:
             explorer.finish()
+
+    def start_spawn_wanderer(self):
+        spawnpoints = self.world.get_all_spawnpoints()
+        for spawnpoint in spawnpoints:
+            self.wanderers.add_unit(*spawnpoint, self.world)
